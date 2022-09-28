@@ -1,5 +1,7 @@
 BACKGROUND_COLOR = "#B1DDC6"
 FONT = "Arial"
+current_card = {}
+to_learn = {}
 
 from tkinter import *
 import pandas
@@ -8,9 +10,20 @@ import random
 import pyperclip
 import json
 
-data = pandas.read_csv("./data/french_words.csv")
-french_dict = data.to_dict(orient="records")
-current_card = {}
+try:
+    data = pandas.read_csv("./data/words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("./data/french_words.csv")
+    to_learn = original_data.to_dict(orient="records")
+else:
+    to_learn = data.to_dict(orient="records")
+
+
+def is_known():
+    to_learn.remove(current_card)
+    data_frame = pandas.DataFrame(to_learn)
+    data_frame.to_csv("./data/words_to_learn.csv", index=False)
+    next_word()
 
 
 
@@ -18,11 +31,12 @@ def next_word():
     global current_card
     global flip_timer
     window.after_cancel(flip_timer)
-    current_card = random.choice(french_dict)
+    current_card = random.choice(to_learn)
     canvas.itemconfig(title, text="French", fill="black")
     canvas.itemconfig(word, text=current_card["French"], fill="black")
     canvas.itemconfig(canvas_image, image=card_front)
     flip_timer = window.after(3000, func=flip_card)
+
 def flip_card():
     canvas.itemconfig(canvas_image, image=card_back)
     canvas.itemconfig(title, text="English", fill="white")
@@ -48,7 +62,7 @@ title = canvas.create_text(400, 150, text="", font=(FONT, 40, "italic"))
 word = canvas.create_text(400, 263, text="", font=(FONT, 60, "bold"))
 
 right_img = PhotoImage(file="./images/right.png")
-right = Button(image=right_img, highlightthickness=0, command=next_word)
+right = Button(image=right_img, highlightthickness=0, command=is_known)
 right.grid(column=1, row=1)
 
 wrong_img = PhotoImage(file="./images/wrong.png")
