@@ -26,7 +26,7 @@ def is_known():
     next_word()
 
 
-
+###
 def next_word():
     global current_card
     global flip_timer
